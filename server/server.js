@@ -5,6 +5,7 @@ var app = express();
 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
+var {ObjectID}=require('mongodb');
 
 app.use(bodyParser.json());
 app.post('/todo',(req,res)=>{
@@ -25,6 +26,33 @@ app.get('/todos',(req,res)=>{
         res.status(400).send(e);
     })
 })
+
+app.get('/todo/:id',(req,res)=>{
+    var id = req.params.id;
+    if(!ObjectID.isValid(id))
+     res.status(404).send();
+
+    Todo.findById(id).then((todo)=>{
+        if(!todo) res.status(404).send();
+        res.send({todo});
+    },(e)=>{
+        res.status(400).send(e);
+    })
+})
+
+app.delete('/todo/:id',(req,res)=>{
+    var id = req.params.id;
+    if(!ObjectID.isValid(id))
+     res.status(404).send();
+
+    Todo.findByIdAndDelete({_id:new ObjectID(id)}).then((todo)=>{
+        if(!todo) res.status(404).send();
+        res.send({todo});
+    }).catch((e)=>{
+        res.status(400).send(e);
+    })
+})
+
 
 app.listen(3000,()=>{
     console.log('started on port 3000');

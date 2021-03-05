@@ -3,11 +3,16 @@ const expect = require('expect');
 
 const {Todo} = require('./../models/todo');
 const {app} = require('./../server');
+const {ObjectID} = require('mongodb');
+
+
 var text = 'go to highschool';
 
 const todos =[{
+    _id:new ObjectID(),
     text: "first todo"
 },{
+    _id:new ObjectID(),
     text: "second todo"
 }]
 
@@ -66,5 +71,61 @@ describe('get todos',()=>{
        .expect((res)=>{
            expect(res.body.todos.length).toBe(2)
        }).end(done)
+    })
+  })
+
+  describe('return todo',()=>{
+    it('get todo',(done)=>{
+        request(app)
+       .get(`/todo/${todos[0]._id.toHexString()}`)
+       .expect(200)
+       .expect((res)=>{
+           expect(res.body.todo.text).toBe(todos[0].text)
+       }).end(done)
+    })
+
+    it('not found todo',(done)=>{
+        request(app)
+       .get(`/todo/1232`)
+       .expect(404)
+       .end(done)
+    })
+  })
+
+  describe('delete todo',()=>{
+    it('should delete todo',(done)=>{
+        var hexId= todos[0]._id.toHexString();
+        request(app)
+       .delete(`/todo/${hexId}`)
+       .expect(200)
+       .expect((res)=>{
+           expect(res.body.todo._id).toBe(hexId)
+       }).end((err,res)=>{
+           if(err){
+           return done(err);
+           }
+
+            Todo.findById(hexId).then((todo)=>{
+            expect(todo).toBeNull();
+            done();
+        }).catch(err=>{
+            done(err);
+        })
+       })
+    })
+
+    it('not found todo',(done)=>{
+        var hexId= new ObjectID().toHexString();
+        request(app)
+       .delete(`/todo/${hexId}`)
+       .expect(404)
+       .end(done)
+    })
+
+    it('non-object todo',(done)=>{
+        request(app)
+       .delete(`/todo/1232`)
+       .expect(404)
+       .end(done)
     })
   })
