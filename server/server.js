@@ -1,6 +1,8 @@
 
 var bodyParser= require('body-parser');
 var express = require('express');
+var _ = require('lodash');
+
 var app = express();
 
 var {mongoose} = require('./db/mongoose');
@@ -53,11 +55,33 @@ app.delete('/todo/:id',(req,res)=>{
     })
 })
 
+app.patch('/todo/:id',(req,res)=>{
+    var id = req.params.id;  
+    var body = _.pick(req.body, ['text','completed']);
+
+    if(!ObjectID.isValid(id))
+     res.status(404).send();
+
+     if(_.isBoolean(body.completed) && body.completed){
+         body.completed =true;
+         body.completedAt = new Date().getTime();
+     }else{
+        body.completed =false;
+        body.completedAt = null;
+     }
+
+    Todo.findOneAndUpdate({_id:new ObjectID(id)},{$set:body},{new:true}).then((todo)=>{
+    if(!todo){
+        res.status(404).send();
+    }
+    res.send(todo);
+   }).catch((err)=>{
+    res.status(404).send(err)});
+})
 
 app.listen(3000,()=>{
     console.log('started on port 3000');
 })
-
 
 module.exports ={app};
 

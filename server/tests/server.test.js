@@ -10,7 +10,9 @@ var text = 'go to highschool';
 
 const todos =[{
     _id:new ObjectID(),
-    text: "first todo"
+    text: "first todo",
+    completedAt:true,
+    completedAt:123456
 },{
     _id:new ObjectID(),
     text: "second todo"
@@ -127,5 +129,48 @@ describe('get todos',()=>{
        .delete(`/todo/1232`)
        .expect(404)
        .end(done)
+    })
+  })
+
+
+  describe('patch todo success',()=>{
+    it('patch todo',(done)=>{
+        
+        var hexId= todos[0]._id.toHexString();
+        var text = 'new text!';
+
+        request(app)
+       .patch(`/todo/${hexId}`)
+       .send({
+        completed:true,
+        text
+        })
+       .expect(200)
+       .expect((res)=>{
+           expect(res.body.text).toBe(text)
+           expect(res.body.completed).toBe(true)
+           expect(typeof res.body.completedAt).toBe('number')
+
+       }).end(done)
+    })
+
+    it('patch todo with false completed',(done)=>{
+        
+        var hexId= todos[1]._id.toHexString();
+        var text = 'new text2020!';
+
+        request(app)
+       .patch(`/todo/${hexId}`)
+       .send({
+        completed:false,
+        text
+        })
+       .expect(200)
+       .expect((res)=>{
+           expect(res.body.text).toBe(text)
+           expect(res.body.completed).toBe(false)
+           expect(res.body.completedAt).toBeNull()
+
+       }).end(done)
     })
   })
