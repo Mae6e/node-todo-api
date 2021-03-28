@@ -9,6 +9,7 @@ var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {ObjectID}=require('mongodb');
 const { User } = require('./models/user');
+const {authenticate}= require('./middleware/authenticate');
 
 app.use(bodyParser.json());
 app.post('/todo',(req,res)=>{
@@ -95,6 +96,22 @@ app.post('/users',(req,res)=>{
 app.listen(3000,()=>{
     console.log('started on port 3000');
 })
+
+app.get('/user/me',authenticate,(req,res)=>{
+     res.send(req.user);
+})
+
+// app.get('/user/me',(req,res)=>{
+//     var token= req.header('x-auth');
+//     User.findByToken(token).then((user)=>{
+//     if(!user){
+//         Promise.reject();
+//     }
+//      res.send(user);
+//     }).catch((e)=>{
+//      res.status(401).send();
+//     });
+// })
 
 module.exports ={app};
 
